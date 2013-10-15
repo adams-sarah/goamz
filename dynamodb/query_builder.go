@@ -351,6 +351,27 @@ func (q *Query) AddItem(attributes []Attribute) {
 	attributeList(b, attributes)
 }
 
+func (q *Query) AddExclusiveStartKey(attributes map[string]*Attribute) {
+	b := q.buffer
+
+	addComma(b)
+
+	b.WriteString(quote("ExclusiveStartKey"))
+	b.WriteString(":")
+	b.WriteString("{")
+
+	index := 0
+	for _, attr := range attributes {
+		if index > 0 {
+			b.WriteString(",")
+		}
+		index++
+		addAttribute(b, *attr)
+	}
+
+	b.WriteString("}")
+}
+
 func (q *Query) AddUpdates(attributes []Attribute, action string) {
 	b := q.buffer
 
@@ -457,28 +478,32 @@ func attributeList(b *bytes.Buffer, attributes []Attribute) {
 			b.WriteString(",")
 		}
 
-		b.WriteString(quote(a.Name))
-		b.WriteString(":")
-
-		b.WriteString("{")
-		b.WriteString(quote(a.Type))
-		b.WriteString(":")
-
-		if a.SetType() {
-			b.WriteString("[")
-			for i, aval := range a.SetValues {
-				if i > 0 {
-					b.WriteString(",")
-				}
-				b.WriteString(quote(aval))
-			}
-			b.WriteString("]")
-		} else {
-			b.WriteString(strconv.Quote(a.Value)) // this needs to be quote escaped
-		}
-
-		b.WriteString("}")
+		addAttribute(b, a)
 	}
+	b.WriteString("}")
+}
+
+func addAttribute(b *bytes.Buffer, a Attribute) {
+	b.WriteString(quote(a.Name))
+	b.WriteString(":")
+
+	b.WriteString("{")
+	b.WriteString(quote(a.Type))
+	b.WriteString(":")
+
+	if a.SetType() {
+		b.WriteString("[")
+		for i, aval := range a.SetValues {
+			if i > 0 {
+				b.WriteString(",")
+			}
+			b.WriteString(quote(aval))
+		}
+		b.WriteString("]")
+	} else {
+		b.WriteString(strconv.Quote(a.Value)) // this needs to be quote escaped
+	}
+
 	b.WriteString("}")
 }
 

@@ -41,10 +41,10 @@ func TestListTables(t *testing.T) {
 }
 
 func TestCreateTable(t *testing.T) {
-	/*if !*amazon {
+	if !*amazon {
 		t.Log("Amazon tests not enabled")
 		return
-	}*/
+	}
 
 	auth, err := aws.EnvAuth()
 
